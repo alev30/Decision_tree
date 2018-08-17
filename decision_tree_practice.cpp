@@ -40,35 +40,88 @@ int main(int argc, char const *argv[])
     vector <sample> original_set;
     string name;
 
+    char val;
+
+
+    inFS.clear();
+    inFS.seekg(0, ios::beg);
+
+    long linecount = std::count(std::istreambuf_iterator<char>(inFS),
+               std::istreambuf_iterator<char>(), '\n');
+
+
+    long lastcounter = 0;
+
+    inFS.clear();
+    inFS.seekg(0, ios::beg);
+
+    getline(inFS, buffer);
     while (getline(inFS, buffer)){
-        for (int i = 0; i < buffer.size() - 2; i++){
-            if (buffer[i] == ','){
-                temp_parts.push_back(temp);
-                temp = "";
+        // issue with reading the last line fo the file, creating conditional statement to deal with this
+        if (lastcounter  == linecount - 1 ){
+            //cout << buffer << endl;
+            for (int i = 0 ; i < buffer.size() - 2; i++){
+                if (buffer[i]== ','){
+                    temp_parts.push_back(temp);
+                    temp = "";
+                }
+                else if(buffer [i] == ' '){
+                    //do nothing
+                }
+                else{
+                    temp+= buffer[i];
+                }
             }
-            else if (buffer[i] == ' '){}
-            else{
-                temp += buffer[i];
+            temp_parts.push_back(temp);
+            val = buffer[buffer.size() - 1];
+            if (val == '1') {
+                dependent_var = 1;
+            } else {
+                dependent_var = 0;
             }
+            temp_parts.erase(temp_parts.begin());
+            temp_parts.erase(temp_parts.begin());
+            original_set.emplace_back(sample(dependent_var, temp_parts, (short) temp_parts.size()));
+            break;
         }
-        char val = buffer[buffer.size() - 2];
-        if (val == '1'){
-            dependent_var = 1;
+        else {
+
+
+            for (int i = 0; i < buffer.size() - 2; i++) {
+                if (buffer[i] == ',') {
+                    temp_parts.push_back(temp);
+                    temp = "";
+                } else if (buffer[i] == ' ') {}
+                else {
+                    temp += buffer[i];
+                }
+            }
+            val = buffer[buffer.size() - 2];
+            if (val == '1') {
+                dependent_var = 1;
+            } else {
+                dependent_var = 0;
+            }
+            temp_parts.erase(temp_parts.begin());
+            temp_parts.erase(temp_parts.begin());
+            original_set.emplace_back(sample(dependent_var, temp_parts, (short) temp_parts.size()));
+            temp_parts.clear();
+            buffer.clear();
+            temp.clear();
         }
-        else{
-            dependent_var = 0;
-        }
-        temp_parts.erase(temp_parts.begin());
-        temp_parts.erase(temp_parts.begin());
-        original_set.emplace_back(sample(dependent_var,temp_parts, (short) temp_parts.size()));
-        temp_parts.clear();
-        buffer.clear();
-        temp.clear();
+        lastcounter++;
     }
+
+    //cout << original_set[399].part_size << " " << original_set[399].truth_value << endl;
 
     vector <bool> used (2, false);
     //struct node * newnode( vector <sample> s, vector <bool>  u_a, int samplesize, int boolcount)
     node * root = newnode(original_set, used, (short) original_set.size(), (short) used.size());
+
+    //for ( int i = 0 ; i < (*root->set).size(); i++) {
+      //  cout<< "truth value: " << (*root->set)[i].truth_value << " particular 1: " << (*root->set)[i].particulars[0] << endl;
+    //}
+
 
     root = split(root);
 

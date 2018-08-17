@@ -142,7 +142,7 @@ vector <vector <string> > options_create(vector <sample> orig_set){
 
 
 struct node{
-    struct node ** children;
+    vector <node*> * children;
     vector <bool> *  used_attributes;
     vector <sample> *  set;
     int setsize;
@@ -169,12 +169,12 @@ struct node * newnode( vector <sample> s, vector <bool> u_a, int samplesize, int
 
 
 
-bool is_pure(struct node * n){
+bool is_pure(struct node n){
 
-    int sample_count = n->setsize;
+    int sample_count = n.setsize;
     int counter = 0;
     for (int i = 0; i < sample_count; i++){
-        counter += (*n->set)[i].truth_value;
+        counter += (*n.set)[i].truth_value;
     }
     // if all true or all false return true
     if (counter == sample_count || counter == 0){
@@ -276,46 +276,35 @@ int find_max_gain(struct node * n){
 
 int optionsCount (struct node * n,int index){
     int output = 0;
-    vector <string> temp;
-    bool dontadd;
-    for (int i = 0; i  < (*n->set).size(); i++){
-        dontadd = false;
-        for (int j = 0; j < (short)temp.size(); j++){
-            if ((*n->set)[i].particulars[index] == temp[i]){
-                dontadd = true;
-            }
-        }
-        if (!dontadd){
-            temp.push_back((*n->set)[i].particulars[index]);
-            output ++;
-        }
-        i++;
-    }
+
+    auto options = options_create(*n->set);
+    auto different_children = options[index];
+
+    output = (short) different_children.size();
+
     return output;
+
+
 }
 
 struct node * child_setup(struct node * parent, int attribute_index, int children_count){
 
-    auto options = options_create((*parent->set));
 
-    vector <vector <sample> > vec;
+    auto options = options_create(*parent->set);
+    auto different_children = options[attribute_index];
+
+    vector <vector <sample> > vec((short)different_children.size());
     vector <sample> temp;
-    bool repeat;
-    for (int i = 0; i < (*parent->set).size(); i++){
-        for (int j = 0; j < (short) vec.size(); j++){
-            repeat = false;
-            for (int k = 0; k < (short) vec[j].size(); k++){
-                if ((*parent->set)[i].particulars[attribute_index]== vec[j][k].particulars[attribute_index]){
-                    repeat = true;
-                    vec[j].push_back((*parent->set)[i]);
-                }
+
+
+    for (int i = 0; i < parent->setsize; i++) {
+        for (int j = 0; j < (short) vec.size(); j++) {
+
+            if ((*parent->set)[i].particulars[attribute_index] == different_children[j]) {
+                vec[j].push_back((*parent->set)[i]);
             }
-            if (!repeat) {
-                vec.push_back(temp);
-                vec[(short)vec.size()-1].push_back((*parent->set)[i]);
-            }
+
         }
-        i++;
     }
 
     vector <bool> unused;
@@ -334,9 +323,12 @@ struct node * child_setup(struct node * parent, int attribute_index, int childre
     }
 
 
+
+
     for(int x = 0; x < children_count; x++){
         //struct node * newnode( vector <sample> s, vector <bool> u_a, int samplesize, int boolcount)
-        parent->children[x] = newnode(vec[x], unused, (short) vec[x].size(), (short) unused.size());
+        (*parent->children)[x] = newnode(vec[x], unused, (short) vec[x].size(), (short) unused.size());
+        cout << "child truth value of first value of the set: " << (*(*parent->children)[x]->set)[0].truth_value<< endl;
     }
 
 
@@ -347,7 +339,7 @@ struct node * child_setup(struct node * parent, int attribute_index, int childre
 
 struct node * split(struct node * basenode) {
     int available = 0;
-    bool pure = is_pure(basenode);
+    bool pure = is_pure(*basenode);
     if (pure){
         return basenode;
     }
@@ -362,18 +354,18 @@ struct node * split(struct node * basenode) {
     int attribute_index = find_max_gain(basenode);
     //3. for each value of A, create a new child node
     int childrencount = optionsCount(basenode, attribute_index);
-    basenode->children = (node **) malloc(sizeof(node *) * childrencount);
+    basenode->children = new vector <node*> (childrencount);
     //4. split training {examples} to child nodes
     basenode = child_setup(basenode, attribute_index, childrencount);
     //5. for each child node / subset
     //if subset is pure, stop
     //else Split (child node, {subset})
     int i = 0;
-    while (&(*basenode->children)[i] != NULL) {
-        if (is_pure(&(*basenode->children)[i])) {
+    while (basenode->children!= NULL) {
+        if (is_pure((*(*basenode->children)[i]))) {
             return basenode;
         } else {
-            split(basenode->children[i]);
+            split((*basenode->children)[i]);
         }
         i++;
     }
@@ -387,11 +379,12 @@ void deletenode(struct node *  n){
 }
 
 struct node * deletetree(struct node* n){
+    /*
     if (n == NULL){
         return n;
     }
     int i = 0;
-    while (&(*n->children)[i]!=NULL){
+    while ((n->children[i])!=NULL){
         if ((*n->children)[i].children == NULL){
             deletenode(n->children[i]);
             free(n->children[i]);
@@ -402,17 +395,23 @@ struct node * deletetree(struct node* n){
         }
         i++;
     }
+     */
+    delete(n);
 
 
     return n;
 }
 
 
-void printtree (node * n){
+
+
+void printtree (struct node * n){
     if (n == NULL){
         return;
     }
-    int i = 0;
+
+    
+
 
 }
 
