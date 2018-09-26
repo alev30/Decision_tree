@@ -352,13 +352,14 @@ struct node * split(struct node * basenode) {
 
 
     // base cases //
-    bool pure = is_pure(basenode);
-    if (pure){
+
+    if (is_pure(basenode)){
         return basenode;
     }
     if (basenode->used_count == (short) basenode->used_attributes.size()){
         return basenode;
     }
+
 
 
 
@@ -390,10 +391,14 @@ struct node * split(struct node * basenode) {
 
 
 void printtree (struct node * n){
-    if (n == NULL){
+    cout << "value of node: " << n->value << endl;
+    if (n->children == nullptr){
         return;
     }
 
+    for (int i = 0; i < (short) (*n->children).size(); i++ ){
+        printtree((*n->children)[i]);
+    }
 }
 
 
