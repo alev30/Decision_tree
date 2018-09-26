@@ -79,7 +79,7 @@ int main(int argc, char const *argv[])
             } else {
                 dependent_var = 0;
             }
-            temp_parts.erase(temp_parts.begin());
+            temp_parts.erase(temp_parts.begin()); // erases first two independent variables, only care about second two
             temp_parts.erase(temp_parts.begin());
             original_set.emplace_back(sample(dependent_var, temp_parts, (short) temp_parts.size()));
             break;
@@ -116,7 +116,18 @@ int main(int argc, char const *argv[])
 
     vector <bool> used (2, false);
     //struct node * newnode( vector <sample> s, vector <bool>  u_a, int samplesize, int boolcount)
-    node * root = newnode(original_set, used, (short) original_set.size(), (short) used.size());
+    node * root = new node;
+    root->value = "Root";
+    root->setsize = original_set.size();
+    for (int i = 0; i < original_set.size(); i++){
+        root->set.push_back(original_set[i]);
+    }
+    root->children = nullptr;
+    for (int i = 0; i < (short)used.size(); i++){
+        root->used_attributes.push_back(false);
+    }
+
+    //newnode(original_set, used, (short) original_set.size(), (short) used.size());
 
     //for ( int i = 0 ; i < (*root->set).size(); i++) {
       //  cout<< "truth value: " << (*root->set)[i].truth_value << " particular 1: " << (*root->set)[i].particulars[0] << endl;
