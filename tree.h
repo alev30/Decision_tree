@@ -11,7 +11,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "math.h"
+#include <cmath>
 
 
 using namespace std;
@@ -166,6 +166,7 @@ struct node * newnode( vector <sample> & s, vector <bool> & u_a, int samplesize,
 
 bool is_pure(struct node * n){
 
+    
     int sample_count = n->setsize;
     int counter = 0;
     for (int i = 0; i < sample_count; i++){
@@ -241,8 +242,8 @@ int find_max_gain(struct node * n){
             //create the subsets
             for (int j = 0; j < (short) current_att_choices.size(); j++){
                 for (int k = 0; k < (short) n->setsize; k++){
-                    if (n->set[k].particulars[j] == current_att_choices[j].c_str()){
-                        subsets[i].push_back(n->set[j]);
+                    if (n->set[k].particulars[i] == current_att_choices[j].c_str()){
+                        subsets[i].push_back(n->set[k]);
                     }
                 }
             }
@@ -251,6 +252,8 @@ int find_max_gain(struct node * n){
         else{
             gain_set.push_back(-100);
         }
+        subsets.clear();
+        current_att_choices.clear();
     }
 
     double max_gain = -1;
@@ -356,7 +359,7 @@ struct node * split(struct node * basenode) {
     if (is_pure(basenode)){
         return basenode;
     }
-    if (basenode->used_count == (short) basenode->used_attributes.size()){
+    if (basenode->used_count == (int) basenode->used_attributes.size()){
         return basenode;
     }
 
